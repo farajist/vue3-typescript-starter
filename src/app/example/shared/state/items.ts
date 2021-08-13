@@ -9,6 +9,7 @@ import {
   Store as VuexStore,
 } from 'vuex';
 import { Item } from '../@types';
+import { itemService } from '../services';
 
 // FIXME: separate into files ???
 export type State = {
@@ -20,9 +21,10 @@ export type State = {
 enum ItemsMutationTypes {
   SET_DATA = 'SET_DATA',
   SET_ERRORS = 'SET_ERRORS',
+  SET_LOADING = 'SET_LOADING',
 }
 
-enum ItemsActionTypes {
+export enum ItemsActionTypes {
   GET_DATA = 'GET_DATA',
 }
 
@@ -35,6 +37,7 @@ interface ItemsGettersReturnTypeMap {
 interface ItemsMutationsPayloadMap {
   SET_DATA: Item[];
   SET_ERRORS: string[];
+  SET_LOADING: boolean;
 }
 
 interface ItemsActionsReturnTypeMap {
@@ -44,7 +47,7 @@ interface ItemsActionsReturnTypeMap {
 // module specific type instatiations
 type Mutations = MutationType<State, ItemsMutationsPayloadMap>;
 type Getters = GetterType<State, ItemsGettersReturnTypeMap>;
-type Actions = ActionType<ItemsActionsReturnTypeMap>;
+type Actions = ActionType<ItemsActionsReturnTypeMap, State, RootState>;
 
 // concrete implementations
 const mutations: MutationTree<State> & Mutations = {
@@ -54,6 +57,9 @@ const mutations: MutationTree<State> & Mutations = {
   [ItemsMutationTypes.SET_ERRORS]: (state, payload) => {
     state.errors = payload;
   },
+  [ItemsMutationTypes.SET_LOADING]: (state, payload) => {
+    state.loading = payload;
+  },
 };
 
 const getters: GetterTree<State, RootState> & Getters = {
@@ -62,8 +68,19 @@ const getters: GetterTree<State, RootState> & Getters = {
 };
 
 const actions: ActionTree<State, RootState> & Actions = {
-  [ItemsActionTypes.GET_DATA]: async () => {
-    Promise.resolve();
+  [ItemsActionTypes.GET_DATA]: async ({ commit }) => {
+    commit(ItemsMutationTypes.SET_LOADING, true);
+    // fetch data and handle error
+    const data = await itemService.fetchItems().catch((errs) => {
+      commit(ItemsMutationTypes.SET_ERRORS, errs);
+      commit(ItemsMutationTypes.SET_LOADING, false);
+    });
+
+    // if there is data set state
+    if (data) {
+      commit(ItemsMutationTypes.SET_DATA, data);
+      commit(ItemsMutationTypes.SET_LOADING, false);
+    }
   },
 };
 

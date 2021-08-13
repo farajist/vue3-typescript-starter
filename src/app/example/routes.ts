@@ -1,6 +1,6 @@
 import { RouteRecordRaw } from 'vue-router';
 import ItemList from './item-list/ItemList.vue';
-import ItemDetail from './item-list/ItemDetail.vue';
+import ItemDetail from './item-detail/ItemDetail.vue';
 
 const itemRoutes: Array<RouteRecordRaw> = [
   {

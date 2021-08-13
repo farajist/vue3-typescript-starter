@@ -1,29 +1,24 @@
 import env from '@/env/env';
-import Axios, { AxiosInstance } from 'axios';
+import Axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-// TODO: put out later
-export type HttpHeaders = {
-  [key: string]: string;
+export type ApiRequestConfig = AxiosRequestConfig & {
+  secure: boolean;
 };
 
-export type RequestConfig = {
-  headers: HttpHeaders;
-};
-
-export class ApiConfig {
-  accessToken?: string;
+export interface ApiConfig {
+  baseURL: string;
 }
+
 /**
  * @description abstract ApiClient
  */
-
 export interface IApiClient {
   get<TRes>(path: string): Promise<TRes>;
 
   post<TReq, TRes>(
     path: string,
     object: TReq,
-    config?: RequestConfig
+    config?: ApiRequestConfig
   ): Promise<TRes>;
 
   put<TReq, TRes>(path: string, object: TReq): Promise<TRes>;
@@ -31,11 +26,15 @@ export interface IApiClient {
   delete<TRes>(path: string): Promise<TRes>;
 }
 
-export default class ApiClient implements IApiClient {
+const isSecure = (config: ApiRequestConfig) => {
+  return config.secure == true;
+};
+
+class ApiClient implements IApiClient {
   private client: AxiosInstance;
 
-  constructor(apiConfiguration: ApiConfig) {
-    this.client = this.createAxiosClient(apiConfiguration);
+  constructor(apiConfig: ApiConfig) {
+    this.client = this.createAxiosClient(apiConfig);
   }
 
   /**
@@ -63,7 +62,7 @@ export default class ApiClient implements IApiClient {
   async post<TReq, TRes>(
     path: string,
     payload: TReq,
-    config?: RequestConfig
+    config?: ApiRequestConfig
   ): Promise<TRes> {
     try {
       const response = config
@@ -111,18 +110,29 @@ export default class ApiClient implements IApiClient {
 
   /**
    * instantiate an axios client
-   * @param apiConfig basic api config
    * @returns axios instance to be used
    */
-  protected createAxiosClient(apiConfig: ApiConfig): AxiosInstance {
-    return Axios.create({
-      baseURL: env.apiBaseUrl,
+  protected createAxiosClient({ baseURL }: ApiConfig): AxiosInstance {
+    const instance = Axios.create({
+      baseURL: baseURL,
       headers: {
         'Content-Type': 'application/json',
-        ...(apiConfig.accessToken && {
-          Authorization: `Bearer ${apiConfig.accessToken}`,
-        }),
       },
     });
+
+    instance.interceptors.request.use((config: AxiosRequestConfig) => {
+      //HACK: until there is solution to per-req interceptor
+      if (isSecure(config as ApiRequestConfig)) {
+        const accessToken = ''; // getAccessToken FIXME: how to retrieve
+        if (accessToken) {
+          config.headers.Authorization = `Bearer ${accessToken}`;
+        }
+      }
+
+      return config;
+    });
+    return instance;
   }
 }
+
+export const apiClient = new ApiClient({ baseURL: env.apiBaseUrl });

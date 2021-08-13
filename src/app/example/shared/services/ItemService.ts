@@ -1,4 +1,4 @@
-import ApiClient, { IApiClient } from '@/app/shared/services/http/client';
+import { apiClient, IApiClient } from '@/app/shared/services/http/client';
 import { FetchItemsResponse, Item } from '../@types';
 import { apiConstants } from '../config';
 
@@ -6,12 +6,13 @@ export interface IItemApiClient {
   fetchItems(): Promise<Item[] | undefined>;
 }
 
-export class ItemApiClient implements IItemApiClient {
+class ItemApiClient implements IItemApiClient {
   itemApiClient: IApiClient;
   apiPath: string;
 
   constructor(itemApiClient: IApiClient) {
     this.itemApiClient = itemApiClient;
+    //FIXME: imported config
     this.apiPath = apiConstants.path;
   }
 
@@ -27,17 +28,19 @@ export class ItemApiClient implements IItemApiClient {
   }
 }
 
-export default class ItemService {
+class ItemService {
   itemApiClient: IItemApiClient;
 
   constructor(itemApiClient: IItemApiClient) {
     this.itemApiClient = itemApiClient;
   }
 
-  async fetchUsers(): Promise<Item[] | undefined> {
+  async fetchItems(): Promise<Item[] | undefined> {
     return this.itemApiClient.fetchItems();
   }
 }
 
-const itemApiClient = new ItemApiClient(new ApiClient({}));
-export const itemService = new ItemService(itemApiClient);
+// instantiate service
+const itemApiClient = new ItemApiClient(apiClient);
+const itemService = new ItemService(itemApiClient);
+export default itemService;
