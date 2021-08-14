@@ -1,3 +1,3 @@
 export const apiConstants = {
-  path: '/items',
+  path: 'mock-data/items.json',
 };

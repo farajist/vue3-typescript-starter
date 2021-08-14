@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { AppHeader } from '@/app/shared/components';
+import { AppHeader } from '../shared/components';
 export default {
   name: 'items',
   components: {

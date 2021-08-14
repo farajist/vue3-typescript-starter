@@ -2,7 +2,14 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 
 import { itemsRoutes } from './example';
 
-const routes: Array<RouteRecordRaw> = [...itemsRoutes];
+const appRoutes = [
+  {
+    path: '/',
+    redirect: '/items',
+  },
+];
+
+const routes: Array<RouteRecordRaw> = [...itemsRoutes, ...appRoutes];
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),

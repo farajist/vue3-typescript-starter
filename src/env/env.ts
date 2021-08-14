@@ -5,7 +5,7 @@ interface Env {
 
 export const env: Env = {
   apiBaseUrl: process.env.VUE_APP_API_BASE_URL || '',
-  environment: 'development',
+  environment: process.env.NODE_ENV || 'development',
 };
 
 const requiredVars: (keyof Env)[] = [];

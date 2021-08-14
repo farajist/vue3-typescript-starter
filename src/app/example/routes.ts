@@ -1,19 +1,21 @@
 import { RouteRecordRaw } from 'vue-router';
 import ItemList from './item-list/ItemList.vue';
-import ItemDetail from './item-detail/ItemDetail.vue';
+import Items from './Items.vue';
+// import ItemDetail from './item-detail/ItemDetail.vue';
 
 const itemRoutes: Array<RouteRecordRaw> = [
   {
     path: '/items',
-    component: ItemList,
+    component: Items,
     children: [
       {
         path: '',
-        redirect: { name: 'items' },
+        name: 'item-list',
+        component: ItemList,
       },
       {
-        path: ':id',
-        component: ItemDetail,
+        path: '',
+        redirect: { name: 'item-list' },
       },
     ],
   },
